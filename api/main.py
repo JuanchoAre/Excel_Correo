@@ -1,13 +1,10 @@
-import argparse
-from argparse import ArgumentParser
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from playwright.async_api import async_playwright
-from pydantic import BaseModel
+# from playwright.async_api import async_playwright
+# from pydantic import BaseModel
 from loguru import logger
 
-from FastApi.routers import read_excel
+from api.routers import email_excel
 
 description = "API para enviar un correo desde una lista de excel"
 app = FastAPI(
@@ -23,7 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(read_excel.router)
+app.include_router(email_excel.router)
 @app.get("/")
 def root():
-    return {"message": "API para cambiar un dato dentro de una lista de excel"}
+    return {"message": "API para Enviar correos desde datos del excel"}
