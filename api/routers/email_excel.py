@@ -7,14 +7,20 @@ from loguru import logger
 from fastapi import APIRouter, HTTPException, UploadFile, File
 
 from src.class_handler import Excel_Handler, Email_Handler
+from api.scheme.basemodel import EmailData
 
 xlsx = Excel_Handler()
-email = Email_Handler()
 
 router = APIRouter()
 @router.post("/send-email")
-async def send_email(file: UploadFile = File(...)):
+async def send_email(file: UploadFile = File(...), credentials: EmailData = EmailData(username="", password="")):
     """endpoint para enviar un correo desde una lista de excel"""
+    email = Email_Handler(
+    smtp_server='smtp.gmail.com',
+    smtp_port=587,
+    username=credentials.username,
+    password=credentials.password
+)
 
     try:
         content = await file.read()
