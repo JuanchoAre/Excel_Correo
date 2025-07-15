@@ -4,7 +4,7 @@ from time import sleep
 
 import pandas as pd
 from loguru import logger
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 
 from src.class_handler import Excel_Handler, Email_Handler
 from api.scheme.basemodel import EmailData
@@ -13,13 +13,15 @@ xlsx = Excel_Handler()
 
 router = APIRouter()
 @router.post("/send-email")
-async def send_email(file: UploadFile = File(...), credentials: EmailData = EmailData(username="", password="")):
+async def send_email(file: UploadFile = File(...), 
+                    username: str = Form(...), 
+                    password: str = Form(...)):
     """endpoint para enviar un correo desde una lista de excel"""
     email = Email_Handler(
     smtp_server='smtp.gmail.com',
     smtp_port=587,
-    username=credentials.username,
-    password=credentials.password
+    username=username,
+    password=password
 )
 
     try:

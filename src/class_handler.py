@@ -20,9 +20,7 @@ class Excel_Handler:
     def excel_to_list(self, file_path):
         df = pd.read_excel(file_path, header=0)
         df = df.iloc[:]
-        # dfheader = df.iloc[0]
         list_ = df.values.tolist()
-        # dfheader = dfheader.tolist()
         return list_
 
 class Email_Handler:

@@ -1,7 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-# from playwright.async_api import async_playwright
-# from pydantic import BaseModel
 from loguru import logger
 
 from api.routers import email_excel
