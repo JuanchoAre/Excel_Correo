@@ -4,3 +4,4 @@ src/__pycache__/__init__.cpython-313.pyc
 api/routers/__pycache__/email_excel.cpython-313.pyc
 api/__pycache__/main.cpython-313.pyc
 .env
+api/scheme/__pycache__/basemodel.cpython-313.pyc
