@@ -30,14 +30,14 @@ class Email_Handler:
         self.username = username
         self.password = password
 
-    def send_email(self, email_list):
+    def send_email(self, to_email, subject, message):
         # Aquí iría la lógica para enviar el correo
         try:
             msg = MIMEMultipart()
             msg['From'] = self.username
-            msg['To'] = email_list[1]
-            msg['Subject'] = email_list[0]
-            msg.attach(MIMEText(f"Su deuda a pagar es de {email_list[2]}", 'plain'))
+            msg['To'] = to_email
+            msg['Subject'] = subject
+            msg.attach(MIMEText(message, 'plain'))
         except Exception as e:
             print(f"Error al crear el mensaje: {e}")
             return False
@@ -46,8 +46,8 @@ class Email_Handler:
             with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
                 server.starttls()
                 server.login(self.username, self.password)
-                server.sendmail(self.username, email_list[1], msg.as_string())
-                logger.info(f"Correo enviado a {email_list[1]}")
+                server.sendmail(self.username, to_email, msg.as_string())
+                logger.info(f"Correo enviado a {to_email}")
             return True
         except Exception as e:
             logger.error(f"Error al enviar el correo: {e}")
