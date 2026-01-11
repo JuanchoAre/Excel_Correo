@@ -16,7 +16,7 @@ router = APIRouter()
 # Configuración de MongoDB
 MONGO_URI = os.getenv("MONGO_URI")
 MONGO_DB = os.getenv("MONGO_DB")
-MONGO_COLLECTION = os.getenv("MONGO_COLLECTION")
+MONGO_COLLECTION = os.getenv("MONGO_USER_COLLECTION")
 
 try:
     client = MongoClient(MONGO_URI)

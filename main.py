@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
-from api.routers import email_excel
+from api.routers import email_excel, login
 
 description = "API para enviar un correo desde una lista de excel"
 app = FastAPI(
@@ -23,3 +23,4 @@ app.include_router(email_excel.router)
 def root():
     return {"message": "API para Enviar correos desde datos del excel"}
 
+app.include_router(login.router)

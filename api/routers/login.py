@@ -12,7 +12,7 @@ router = APIRouter()
 # Configuración de MongoDB
 MONGO_URI = os.getenv("MONGO_URI")
 MONGO_DB = os.getenv("MONGO_DB")
-MONGO_COLLECTION = os.getenv("MONGO_COLLECTION")
+MONGO_COLLECTION = os.getenv("MONGO_LOGIN_COLLECTION")
 
 try:
     client = MongoClient(MONGO_URI)
@@ -22,7 +22,7 @@ try:
 except Exception as e:
     logger.error(f"Error al conectar con MongoDB: {e}")
 
-router.post("/login", tags=["Login"])
+@router.post("/login", tags=["Login"])
 def login(email: str, password: str):
     try:
         cursor = collection.find({"correo": email, "contraseña": password})
@@ -35,7 +35,7 @@ def login(email: str, password: str):
         logger.error(f"Error en login: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-router.post("/register", tags=["Login"])
+@router.post("/register", tags=["Login"])
 def register(user: str, email: str, password: str):
     try:
         cursor = collection.find({"correo": email})
