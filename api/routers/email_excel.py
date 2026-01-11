@@ -15,11 +15,13 @@ router = APIRouter()
 
 # Configuración de MongoDB
 MONGO_URI = os.getenv("MONGO_URI")
+MONGO_DB = os.getenv("MONGO_DB")
+MONGO_COLLECTION = os.getenv("MONGO_COLLECTION")
 
 try:
     client = MongoClient(MONGO_URI)
-    db = client['nombre_de_tu_base_de_datos'] # Ajusta el nombre de tu BD
-    collection = db['nombre_de_tu_coleccion'] # Ajusta el nombre de tu colección
+    db = client[MONGO_DB]
+    collection = db[MONGO_COLLECTION]
     logger.info("Conexión a MongoDB exitosa")
 except Exception as e:
     logger.error(f"Error al conectar con MongoDB: {e}")
