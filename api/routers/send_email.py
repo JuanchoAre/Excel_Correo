@@ -16,12 +16,14 @@ router = APIRouter()
 # Configuración de MongoDB
 MONGO_URI = os.getenv("MONGO_URI")
 MONGO_DB = os.getenv("MONGO_DB")
-MONGO_COLLECTION = os.getenv("MONGO_USER_COLLECTION")
+MONGO_USER_COLLECTION = os.getenv("MONGO_USER_COLLECTION")
+MONGO_SENT_COLLECTION = os.getenv("MONGO_SENT_COLLECTION")
 
 try:
     client = MongoClient(MONGO_URI)
     db = client[MONGO_DB]
-    collection = db[MONGO_COLLECTION]
+    user_collection = db[MONGO_USER_COLLECTION]
+    sent_collection = db[MONGO_SENT_COLLECTION]
     logger.info("Conexión a MongoDB exitosa")
 except Exception as e:
     logger.error(f"Error al conectar con MongoDB: {e}")
@@ -54,9 +56,14 @@ def send_emails_to_docs(documents: List[dict], credentials: EmailRequest):
             if email_handler.send_email(user_email, credentials.subject, credentials.message):
                 count += 1
                 logger.info(f"Correo enviado a {user_email}")
+                sent_collection.insert_one({
+                    "email": user_email,
+                    "message": credentials.message,
+                    })
             else:
                 logger.warning(f"Fallo al enviar a {user_email}")
-                
+        else:
+            logger.warning("Correo no encontrado en el documento.")
     return count
 
 @router.post("/database-operation")
@@ -72,9 +79,6 @@ async def database_operation(payload: dict = Body(...)):
         
         # Ejemplo de operación (puedes borrar o modificar esto):
         logger.info(f"Procesando datos: {payload}")
-
-                
-        
         return {"message": "Operación de base de datos realizada con éxito"}
 
     except Exception as e:
@@ -85,7 +89,7 @@ async def database_operation(payload: dict = Body(...)):
 async def send_emails_all(request: EmailRequest):
     """Envia correos a TODOS los usuarios en la base de datos."""
     try:
-        cursor = collection.find({})
+        cursor = user_collection.find({})
         docs = list(cursor)
         sent_count = send_emails_to_docs(docs, request)
         return {"message": f"Se enviaron {sent_count} correos exitosamente."}
@@ -101,7 +105,7 @@ async def send_emails_by_age(request: EmailRequest):
         
     try:
         query = {"edad": {"$gte": request.min_age, "$lte": request.max_age}}
-        cursor = collection.find(query)
+        cursor = user_collection.find(query)
         docs = list(cursor)
         sent_count = send_emails_to_docs(docs, request)
         return {"message": f"Se enviaron {sent_count} correos a usuarios entre {request.min_age} y {request.max_age} años."}
@@ -117,7 +121,7 @@ async def send_emails_by_status(request: EmailRequest):
         
     try:
         query = {"activo": request.is_active}
-        cursor = collection.find(query)
+        cursor = user_collection.find(query)
         docs = list(cursor)
         sent_count = send_emails_to_docs(docs, request)
         status_str = "activos" if request.is_active else "inactivos"
