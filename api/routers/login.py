@@ -25,10 +25,9 @@ except Exception as e:
 @router.post("/login", tags=["Login"])
 def login(email: str, password: str):
     try:
-        cursor = collection.find({"correo": email, "contraseña": password})
-        docs = list(cursor)
-        if docs:
-            return {"message": "Login exitoso"}
+        doc = collection.find_one({"correo": email, "contraseña": password})
+        if doc:
+            return {"message": f"Login exitoso, {doc['nombre']}"}
         else:
             return {"message": "Credenciales incorrectas"}
     except Exception as e:
@@ -38,9 +37,8 @@ def login(email: str, password: str):
 @router.post("/register", tags=["Login"])
 def register(user: str, email: str, password: str):
     try:
-        cursor = collection.find({"correo": email})
-        docs = list(cursor)
-        if docs:
+        doc = collection.find_one({"correo": email})
+        if doc:
             return {"message": "Correo ya registrado"}
         else:
             collection.insert_one({"nombre": user, "correo": email, "contraseña": password})
