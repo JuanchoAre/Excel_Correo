@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from fastapi import APIRouter, HTTPException, Body, Query
 from pymongo import MongoClient
 from loguru import logger
-from pydantic import BaseModel
+from api.scheme.basemodel import EmailBase, EmailFilterAge, EmailFilterStatus
 
 from src.class_handler import Email_Handler
 
@@ -20,30 +20,25 @@ MONGO_USER_COLLECTION = os.getenv("MONGO_USER_COLLECTION")
 MONGO_SENT_COLLECTION = os.getenv("MONGO_SENT_COLLECTION")
 
 try:
-    client = MongoClient(MONGO_URI)
+    client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
     db = client[MONGO_DB]
     user_collection = db[MONGO_USER_COLLECTION]
     sent_collection = db[MONGO_SENT_COLLECTION]
-    logger.info("Conexión a MongoDB exitosa")
-except Exception as e:
-    logger.error(f"Error al conectar con MongoDB: {e}")
-
-# Modelo para recibir credenciales de correo (si no se quieren hardcodear)
-class EmailRequest(BaseModel):
-    username: str
-    password: str
-    subject: str = "Notificación Importante"
-    message: str = "Hola, este es un mensaje automático."
     
-    # Parámetros opcionales para filtros en los endpoints específicos
-    min_age: Optional[int] = None
-    max_age: Optional[int] = None
-    is_active: Optional[bool] = None
+    # Forzar verificación de conexión
+    client.admin.command('ping')
+    logger.info("Conexión a MongoDB establecida y verificada exitosamente")
+except Exception as e:
+    logger.error(f"FALLO CRÍTICO al conectar con MongoDB: {e}")
+    # Opcional: Podríamos no levantar la app si la DB falla, 
+    # pero por ahora solo logueamos el error grave.
 
-def send_emails_to_docs(documents: List[dict], credentials: EmailRequest):
+
+
+def send_emails_to_docs(documents: List[dict], credentials: EmailBase):
     """Función auxiliar para iterar documentos y enviar correos."""
     email_handler = Email_Handler(
-        username=credentials.username, 
+        email=credentials.email, 
         password=credentials.password
     )
     
@@ -86,7 +81,7 @@ async def database_operation(payload: dict = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/send-emails/all", tags=["Emails"])
-async def send_emails_all(request: EmailRequest):
+async def send_emails_all(request: EmailBase):
     """Envia correos a TODOS los usuarios en la base de datos."""
     try:
         cursor = user_collection.find({})
@@ -98,10 +93,8 @@ async def send_emails_all(request: EmailRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/send-emails/by-age")
-async def send_emails_by_age(request: EmailRequest):
+async def send_emails_by_age(request: EmailFilterAge):
     """Envia correos a usuarios dentro de un rango de edad."""
-    if request.min_age is None or request.max_age is None:
-        raise HTTPException(status_code=400, detail="Debe proporcionar min_age y max_age.")
         
     try:
         query = {"edad": {"$gte": request.min_age, "$lte": request.max_age}}
@@ -114,10 +107,8 @@ async def send_emails_by_age(request: EmailRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/send-emails/by-status")
-async def send_emails_by_status(request: EmailRequest):
+async def send_emails_by_status(request: EmailFilterStatus):
     """Envia correos filtrando por si el usuario está activo o no."""
-    if request.is_active is None:
-        raise HTTPException(status_code=400, detail="Debe proporcionar is_active (true/false).")
         
     try:
         query = {"activo": request.is_active}

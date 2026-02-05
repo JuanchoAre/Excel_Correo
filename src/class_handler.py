@@ -14,7 +14,7 @@ class Excel_Handler:
             df = pd.read_excel(file)
             return df
         except Exception as e:
-            print(f"Error al leer el excel: {e}")
+            logger.error(f"Error al leer el excel: {e}")
             return None
 
     def excel_to_list(self, file_path):
@@ -24,29 +24,29 @@ class Excel_Handler:
         return list_
 
 class Email_Handler:
-    def __init__(self, smtp_server='smtp.gmail.com', smtp_port=587, username='', password=''):
+    def __init__(self, smtp_server='smtp.gmail.com', smtp_port=587, email='', password=''):
         self.smtp_server = smtp_server
         self.smtp_port = smtp_port
-        self.username = username
+        self.email = email
         self.password = password
 
     def send_email(self, to_email, subject, message):
         # Aquí iría la lógica para enviar el correo
         try:
             msg = MIMEMultipart()
-            msg['From'] = self.username
+            msg['From'] = self.email
             msg['To'] = to_email
             msg['Subject'] = subject
             msg.attach(MIMEText(message, 'plain'))
         except Exception as e:
-            print(f"Error al crear el mensaje: {e}")
+            logger.error(f"Error al crear el mensaje: {e}")
             return False
         # Por ejemplo, usando smtplib o cualquier otra librería de envío de correos
         try:
             with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
                 server.starttls()
-                server.login(self.username, self.password)
-                server.sendmail(self.username, to_email, msg.as_string())
+                server.login(self.email, self.password)
+                server.sendmail(self.email, to_email, msg.as_string())
                 logger.info(f"Correo enviado a {to_email}")
             return True
         except Exception as e:
